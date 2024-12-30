@@ -1,0 +1,142 @@
+name: Format Domains to JSON and Create Release
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+
+  push:
+    branches:
+      - main
+
+jobs:
+  format_domains:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download list
+        run: curl -o list.txt https://antifilter.download/list/allyouneed.lst
+
+      # - name: Filter invalid domains
+      #   run: |
+      #     # Убираем все домены с недопустимыми символами
+      #     grep -Pv '[^a-zA-Z0-9.-]' domains.lst > valid_domains.lst
+      #     mv valid_domains.lst domains.lst
+
+      - name: Convert list to JSON format
+        run: |
+          echo '{
+            "version": 1,
+            "rules": [
+              {
+                "ip_cidr": [' > output.json
+
+          # Форматируем каждый домен как строку в JSON
+          awk '{print "        \"" $0 "\","}' list.txt >> output.json
+
+          # Убираем запятую после последнего элемента
+          sed -i '$ s/,$//' output.json
+
+          echo '      ]
+              }
+            ]
+          }' >> output.json
+
+      - name: Show formatted output
+        run: cat output.json
+
+      - name: Download and install sing-box
+        run: |
+          # Скачиваем последний релиз sing-box
+          latest_version=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
+          curl -L "https://github.com/SagerNet/sing-box/releases/download/${latest_version}/sing-box_${latest_version#v}_linux_amd64.pkg.tar.zst" -o sing-box.tar.zst
+
+          # Устанавливаем необходимые утилиты для работы с .tar.zst
+          sudo apt-get update
+          sudo apt-get install -y zstd
+
+          # Распаковываем архив и устанавливаем sing-box
+          mkdir -p sing-box
+          tar -I zstd -xf sing-box.tar.zst -C sing-box
+          chmod +x sing-box/usr/bin/sing-box
+          sudo mv sing-box/usr/bin/sing-box /usr/local/bin/
+
+      - name: Compile output.json to output.srs using sing-box
+        run: |
+          sing-box rule-set compile "output.json"
+
+      - name: Compile chatgpt.json to chatgpt.srs
+        run: |
+          sing-box rule-set compile "chatgpt.json"
+
+      - name: Compile discord.json to discord.srs
+        run: |
+          sing-box rule-set compile "discord.json"
+
+      - name: Compile youtube.json to youtube.srs
+        run: |
+          sing-box rule-set compile "youtube.json"
+
+      - name: Show compiled output
+        run: cat output.srs
+
+      - name: Generate random version
+        id: generate_version
+        run: |
+          random_number=$(shuf -i 10000000-99999999 -n 1)
+          tag_name="${random_number}"
+          echo "random_number=$random_number" >> $GITHUB_ENV
+          echo "tag_name=$tag_name" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "${{ env.tag_name }}"
+          release_name: "${{ env.random_number }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload rkn.srs to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output.srs
+          asset_name: rkn.srs
+          asset_content_type: application/octet-stream
+
+      - name: Upload chatgpt.srs to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./chatgpt.srs
+          asset_name: chatgpt.srs
+          asset_content_type: application/octet-stream
+
+      - name: Upload discord.srs to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./discord.srs
+          asset_name: discord.srs
+          asset_content_type: application/octet-stream
+
+      - name: Upload youtube.srs to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./youtube.srs
+          asset_name: youtube.srs
+          asset_content_type: application/octet-stream
