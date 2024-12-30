@@ -7,6 +7,14 @@
         "oaistatic.com",
         "oaiusercontent.com"
       ]
+    },
+    {
+      "domain_suffix": [
+        ".chatgpt.com",
+        ".openai.com",
+        ".oaistatic.com",
+        ".oaiusercontent.com"
+      ]
     }
   ],
   "version": 1
