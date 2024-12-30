@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "rules": [
     {
       "domain": [
@@ -15,7 +16,22 @@
         "googleapis.com",
         "googlevideo.com"
       ]
+    },
+    {
+      "domain_suffix": [
+        "ggpht.com",
+        "ytimg.com",
+        "youtube.com",
+        "www.youtube.com",
+        "yt.be",
+        "youtu.be",
+        "youtube-nocookie.com",
+        "googleadservices.com",
+        "gvt1.com",
+        "google.com",
+        "googleapis.com",
+        "googlevideo.com"
+      ]
     }
-  ],
-  "version": 1
+  ]
 }

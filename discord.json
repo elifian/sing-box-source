@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "rules": [
     {
       "domain": [
@@ -10,8 +11,20 @@
         "discordcdn.com",
         "discordstatus.com",
         "googleapis.com"
+      ],
+      "domain_keyword": [
+        "discord"
+      ],
+      "domain_suffix": [
+        ".discord.com",
+        ".discord.gg",
+        ".discordapp.com",
+        ".discordapp.net",
+        ".discord.media",
+        ".discordcdn.com",
+        ".discordstatus.com",
+        ".googleapis.com"
       ]
     }
-  ],
-  "version": 1
+  ]
 }
