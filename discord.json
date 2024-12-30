@@ -1,5 +1,17 @@
 {
+  "version": 1,
   "rules": [
+    {
+      "process_name": [
+        "Discord.exe",
+        "Discord"
+      ],
+      "domain_suffix": [
+        "discord.media"
+      ],
+      "package_name": "com.discord",
+      "network":"udp"
+    },
     {
       "domain": [
         "discord.com",
@@ -10,8 +22,22 @@
         "discordcdn.com",
         "discordstatus.com",
         "googleapis.com"
-      ]
+      ],
+      "domain_suffix": [
+        ".discord.com",
+        ".discord.gg",
+        ".discordapp.com",
+        ".discordapp.net",
+        ".discord.media",
+        ".discordcdn.com",
+        ".discordstatus.com",
+        ".googleapis.com"
+      ],
+      "process_name": [
+        "Discord.exe",
+        "Discord"
+      ],
+      "package_name": "com.discord"
     }
-  ],
-  "version": 1
+  ]
 }
